@@ -13,12 +13,13 @@ import java.util.Optional;
 
 @Configuration
 public class CORSConfiguration {
-/*    private String[] allowedOrigins;
+
+    private String[] allowedOrigins;
 
     @Autowired
     public CORSConfiguration(@Value("${application.allowedOrigins}") List<String> allowedOrigins) {
         this.allowedOrigins = allowedOrigins.toArray(new String[0]);
-    }*/
+    }
 
     @Bean
     public WebMvcConfigurer corsConfigurer() {
@@ -26,7 +27,7 @@ public class CORSConfiguration {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOriginPatterns("*");
+                        .allowedOriginPatterns(allowedOrigins);
             }
         };
     }
