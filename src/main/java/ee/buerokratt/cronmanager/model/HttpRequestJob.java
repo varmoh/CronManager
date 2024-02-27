@@ -25,6 +25,13 @@ public class HttpRequestJob extends YamlJob implements Job {
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
         super.execute(context);
+
+        String parentResult = (String) context.getResult();
+
+        if (!parentResult.isEmpty()) {
+            throw new JobExecutionException("Stopped execution: current time outside defined limits (%d < %d < %d)".formatted(getStartDate(), System.currentTimeMillis(), getEndDate()));
+        }
+
         method = context.getJobDetail().getJobDataMap().getString("method");
         url = context.getJobDetail().getJobDataMap().getString("url");
         log.info(HttpHelper.doRequest(method, url).getBody());
@@ -32,7 +39,13 @@ public class HttpRequestJob extends YamlJob implements Job {
 
     @Override
     public String toString() {
-        return String.format("%s (%s) => %s: %s", getName(), getTrigger(), getMethod(), getUrl());
+        return String.format("%s (%s) => %s: %s [%d -> %d]",
+                getName(),
+                getTrigger(),
+                getMethod(),
+                getUrl(),
+                getStartDate(),
+                getEndDate());
     }
 
     @Override
