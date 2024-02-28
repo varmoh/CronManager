@@ -1,5 +1,7 @@
 update_post:
-  trigger: "0 44 8 * * ?"
+  trigger: "0 41 7 * * ?"
   type: http
   method: GET
   url: https://ruuter.dev.buerokratt.ee/pub2/healthz
+  startDate: 1709104119000 # 2024-02-28
+  endDate: 1740726519000   # 2025-02-28

@@ -15,7 +15,15 @@ Base Job structure:
 <job_name>:
   trigger: <trigger_expression>
   type: <job_type>
+  startDate: <start_timestamp>
+  endDate: <end_timestamp>
 ```
+
+- Trigger expressions can be set to cron expression or string value "off", in which case this job is not scheduled to run.
+  It can still be run through API.
+- `startDate` and `endDate` are optional and stored as timestamps in milliseconds since 1970-01-01 ("epoch"). Cronjobs action
+is not executed if current time is before `startDate` or after `endDate`. 
+
 
 Currently only HTTP request job is implemented with structure:
 
@@ -26,10 +34,6 @@ Currently only HTTP request job is implemented with structure:
   method: <http_method (i.e GET, POST, etc.)>
   url: <request_url>
 ```
-
-
-Trigger expressions can be set to cron expression or string value "off", in which case this job is not scheduled to run.
-It can still be run through API.
 
 An example of a configuration is included in DSL/example.yml
 
