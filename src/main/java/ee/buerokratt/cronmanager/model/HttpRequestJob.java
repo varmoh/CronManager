@@ -29,7 +29,7 @@ public class HttpRequestJob extends YamlJob implements Job {
         String parentResult = (String) context.getResult();
 
         if (!parentResult.isEmpty()) {
-            throw new JobExecutionException("Stopped execution: current time outside defined limits (%d < %d < %d)".formatted(getStartDate(), System.currentTimeMillis(), getEndDate()));
+            throw new JobExecutionException("Stopped execution: current time outside defined limits: %d [ %d -> %d ]".formatted(System.currentTimeMillis(), getStartDate(),  getEndDate()));
         }
 
         method = context.getJobDetail().getJobDataMap().getString("method");
