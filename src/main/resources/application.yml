@@ -1,3 +1,6 @@
 application:
   configPath: DSL/
   allowedOrigins: 192.168.10.1
+  shellEnvironment:
+    PARAMETER1=parameter1value
+    PARAMETER2=parameter2value
