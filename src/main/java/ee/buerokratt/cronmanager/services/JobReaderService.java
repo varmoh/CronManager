@@ -5,14 +5,18 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ee.buerokratt.cronmanager.model.HttpRequestJob;
+import ee.buerokratt.cronmanager.model.ShellExecuteJob;
 import ee.buerokratt.cronmanager.model.YamlJob;
 
 import ee.buerokratt.cronmanager.utils.LoggingUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.core.ApplicationContext;
 import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -90,9 +94,18 @@ public class JobReaderService {
 
     private YamlJob nodeToJob(Map.Entry<String, JsonNode> entry) {
         try {
-            HttpRequestJob job = mapper.treeToValue(entry.getValue(), HttpRequestJob.class);
-            job.setName(entry.getKey());
-            return job;
+            String type = entry.getValue().get("type").textValue();
+
+            if ("http".equals(type)) {
+                HttpRequestJob job =  mapper.treeToValue(entry.getValue(), HttpRequestJob.class);;
+                job.setName(entry.getKey());
+                return job;
+            } else if ("exec".equals(type)) {
+                ShellExecuteJob job =  mapper.treeToValue(entry.getValue(), ShellExecuteJob.class);;
+                job.setName(entry.getKey());
+                return job;
+            }
+            throw new RuntimeException("Could not parse job type: "+type);
         } catch (JsonProcessingException ex) {
             throw new RuntimeException(ex);
         }

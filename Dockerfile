@@ -7,6 +7,7 @@ COPY gradle gradle
 COPY build.gradle .
 COPY src src
 COPY .env .env
+COPY scripts scripts
 COPY DSL DSL
 
 RUN chmod 754 ./gradlew
@@ -21,6 +22,8 @@ COPY --from=build ${DEPENDENCY}/BOOT-INF/lib /app/lib
 COPY --from=build ${DEPENDENCY}/META-INF /app/META-INF
 COPY --from=build ${DEPENDENCY}/BOOT-INF/classes /app
 COPY DSL /DSL
+COPY scripts /app/scripts/
+RUN chmod a+x /app/scripts/*
 
 ENV application.config-path=/DSL
 

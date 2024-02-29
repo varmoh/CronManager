@@ -89,7 +89,7 @@ Example:
 ]
 ```
 
-#### POST /execute/<group_name>/<job_name> (TODO)
+#### POST /execute/<group_name>/<job_name> 
 Executes specified job from specifed group out of schedule.
 
 Returns list of currently running jobs in that group at the moment of execution in same format as `GET /running``

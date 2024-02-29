@@ -14,7 +14,7 @@ import org.quartz.JobExecutionException;
 @Getter
 @Setter
 @RequiredArgsConstructor
-public class HttpRequestJob extends YamlJob implements Job {
+public class HttpRequestJob extends YamlJob {
     private String method;
     private String url;
 
@@ -23,13 +23,13 @@ public class HttpRequestJob extends YamlJob implements Job {
     }
 
     @Override
-    public void execute(JobExecutionContext context) throws JobExecutionException {
+    protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
         super.execute(context);
 
         String parentResult = (String) context.getResult();
 
         if (!parentResult.isEmpty()) {
-            throw new JobExecutionException("Stopped execution: current time outside defined limits (%d < %d < %d)".formatted(getStartDate(), System.currentTimeMillis(), getEndDate()));
+            throw new JobExecutionException("Stopped execution: current time outside defined limits: %d [ %d -> %d ]".formatted(System.currentTimeMillis(), getStartDate(),  getEndDate()));
         }
 
         method = context.getJobDetail().getJobDataMap().getString("method");
