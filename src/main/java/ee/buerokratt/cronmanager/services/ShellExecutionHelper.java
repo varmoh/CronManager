@@ -24,7 +24,7 @@ public class ShellExecutionHelper {
 
     @Autowired
     public ShellExecutionHelper(@Value("${application.shellEnvironment}") List<String> environment,
-                                @Value("${application.appRootPath]") String rootPath) {
+                                @Value("${application.appRootPath}") String rootPath) {
         this.environment = environment.toArray(new String[0]);
         if (appRootPath == null) {
             appRootPath = rootPath;
