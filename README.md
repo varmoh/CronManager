@@ -24,8 +24,9 @@ Base Job structure:
 - `startDate` and `endDate` are optional and stored as timestamps in milliseconds since 1970-01-01 ("epoch"). Cronjobs action
 is not executed if current time is before `startDate` or after `endDate`. 
 
+### Implemented job types
 
-Currently only HTTP request job is implemented with structure:
+#### HTTP request job
 
 ```yaml
 <job_name>:
@@ -34,6 +35,22 @@ Currently only HTTP request job is implemented with structure:
   method: <http_method (i.e GET, POST, etc.)>
   url: <request_url>
 ```
+
+#### Shell execution job
+```yaml
+<job_name>:
+  trigger: <trigger_expression>
+  type: http
+  command: <path_to_executable_script>
+```
+
+- `path_to_executable_script` is resolved from application root 
+folder (defined in `application.appRootFolder`)
+- if server is started as a standalone and by `startup.sh` script 
+or inside a Docker container, the scripts in `scripts` folder under 
+application root are automatically change to executable, in other cases
+this has to be done manually.
+
 
 An example of a configuration is included in DSL/example.yml
 
@@ -90,7 +107,7 @@ Example:
 ```
 
 #### POST /execute/<group_name>/<job_name> 
-Executes specified job from specifed group out of schedule.
+Executes specified job from specifed group out of sch edule.
 
 Returns list of currently running jobs in that group at the moment of execution in same format as `GET /running``
 
