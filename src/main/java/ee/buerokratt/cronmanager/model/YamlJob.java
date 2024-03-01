@@ -56,4 +56,5 @@ public abstract class YamlJob extends QuartzJobBean {
             map.put("endDate", endDate);
         return map;
     }
+
 }
