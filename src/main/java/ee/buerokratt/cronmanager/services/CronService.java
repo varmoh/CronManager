@@ -27,9 +27,11 @@ public class CronService {
         JobDetail jobDetail = JobBuilder.newJob(job.getClass())
                 .withIdentity(job.getName(), groupname)
                 .usingJobData(job.getJobData())
+                .storeDurably()
                 .build();
 
-        if (! "off".equals(job.getTrigger())) {
+        log.info("Adding job %s with trigger %s".formatted(job.getName(), job.getTrigger()));
+        if (! "false".equals(job.getTrigger())) {
             Trigger jobTrigger = TriggerBuilder.newTrigger()
                     .withIdentity(job.getTriggerName(), groupname)
                     .startNow()
