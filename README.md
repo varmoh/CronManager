@@ -19,7 +19,8 @@ Base Job structure:
   endDate: <end_timestamp>
 ```
 
-- Trigger expressions can be set to cron expression or string value "off", in which case this job is not scheduled to run.
+- Trigger expressions can be set to cron expression or `off`/`false` (NB! without quotes 
+which would make this a string) in which case this job is not scheduled to run.
   It can still be run through API.
 - `startDate` and `endDate` are optional and stored as timestamps in milliseconds since 1970-01-01 ("epoch"). Cronjobs action
 is not executed if current time is before `startDate` or after `endDate`. 
