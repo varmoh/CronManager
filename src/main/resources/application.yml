@@ -4,4 +4,4 @@ application:
   shellEnvironment:
     PARAMETER1=parameter1value
     PARAMETER2=parameter2value
-    
+  appRootPath: /Users/rdn/Work/Byro/CronManager
