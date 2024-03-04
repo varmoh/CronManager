@@ -1,6 +1,6 @@
 # CronManager feature proposal
 
-## Configuration files
+## Job specification files
 
 * Located in ./DSL
 * File name is applied as cron group - namespace, that groups jobs defined in that file together. 
@@ -126,3 +126,12 @@ Reloads specified job group from configuration. If no group is supplied, reloads
 This can be used when administrator has changed the configuration in runtime.
 
 #### POST /upload/<group_name> (TODO)
+
+
+## Configuration
+
+- `configPath` - location of job specification files, default value `/DSL`
+- `allowedOrigins`- YAML list of CORS allowed IP's 
+- `shellEnvironment` - YAML list of key-value pairs (key=value) that should be passed 
+to executed scripts 
+- `appRootPath`- location of `scripts` folder, usually application root, default `/app`
