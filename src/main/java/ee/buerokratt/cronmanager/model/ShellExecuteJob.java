@@ -1,6 +1,5 @@
 package ee.buerokratt.cronmanager.model;
 
-import ee.buerokratt.cronmanager.services.ShellExecutionHelper;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -8,8 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 
 import java.io.*;
 import java.util.List;
@@ -23,18 +20,14 @@ public class ShellExecuteJob extends YamlJob {
 
     private String command;
 
-    @Autowired
-    ShellExecutionHelper shellHelper;
-
     @Override
     public String getType() {
         return "exec";
     }
 
     @Override
-    public void executeInternal(JobExecutionContext context) throws JobExecutionException {
-        super.executeInternal(context);
-        SpringBeanAutowiringSupport.processInjectionBasedOnCurrentContext(this);
+    public void execute(JobExecutionContext context) throws JobExecutionException {
+        super.execute(context);
 
         String parentResult = (String) context.getResult();
         if (!parentResult.isEmpty()) {
@@ -44,11 +37,18 @@ public class ShellExecuteJob extends YamlJob {
         command = context.getJobDetail().getJobDataMap().getString("command");
 
         try {
-            List<String> result = ShellExecutionHelper.executeWithoutEnvironment(command);
+            List<String> result = execProcess(command);
             log.info(result.stream().collect(Collectors.joining("\n")));
         } catch (IOException e) {
             throw new JobExecutionException("Problem running command: ", e);
         }
+    }
+
+    private List<String> execProcess(String command) throws IOException {
+        File dir = new File("/home/ubuntu/cronman/CronManager/");
+        Process process = Runtime.getRuntime().exec(command, null, dir);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        return reader.lines().collect(Collectors.toList());
     }
 
     @Override

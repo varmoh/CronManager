@@ -5,12 +5,11 @@ import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import org.springframework.scheduling.quartz.QuartzJobBean;
 
 import java.util.Date;
 
 @Data
-public abstract class YamlJob extends QuartzJobBean {
+public abstract class YamlJob implements Job {
 
     private String name;
     private String trigger;
@@ -27,7 +26,7 @@ public abstract class YamlJob extends QuartzJobBean {
         return getName() + "_trigger";
     }
 
-    protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
+    public void execute(JobExecutionContext context) throws JobExecutionException {
         name = context.getJobDetail().getJobDataMap().getString("name");
         trigger = context.getJobDetail().getJobDataMap().getString("trigger");
         startDate = context.getJobDetail().getJobDataMap().containsKey("startDate") ?
