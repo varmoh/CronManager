@@ -14,7 +14,7 @@ import org.quartz.JobExecutionException;
 @Getter
 @Setter
 @RequiredArgsConstructor
-public class HttpRequestJob extends YamlJob {
+public class HttpRequestJob extends YamlJob implements Job {
     private String method;
     private String url;
 
@@ -23,7 +23,7 @@ public class HttpRequestJob extends YamlJob {
     }
 
     @Override
-    protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
+    public void execute(JobExecutionContext context) throws JobExecutionException {
         super.execute(context);
 
         String parentResult = (String) context.getResult();
