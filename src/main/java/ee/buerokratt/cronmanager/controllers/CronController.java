@@ -4,6 +4,7 @@ import ee.buerokratt.cronmanager.services.CronService;
 import ee.buerokratt.cronmanager.services.JobReaderService;
 import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -20,12 +21,14 @@ public class CronController {
         return "BYK Cron started";
     }
 
-    @GetMapping("/jobs/")
+    @GetMapping(value = "/jobs/",
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public String jobs() {
         return jobs("");
     }
 
-    @GetMapping("/jobs/{groupName}")
+    @GetMapping(value = "/jobs/{groupName}",
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public String jobs(@PathVariable(required = false) String groupName) {
         try {
             return cron.getJobs(groupName);
@@ -34,12 +37,14 @@ public class CronController {
         }
     }
 
-    @GetMapping("/running/")
+    @GetMapping(value = "/running/",
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public String runningJobs() {
         return runningJobs("");
     }
 
-    @GetMapping("/running/{groupName}")
+    @GetMapping(value = "/running/{groupName}",
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public String runningJobs(@PathVariable(required = false) String groupName) {
         try {
             return cron.getRunningJobs(groupName);
@@ -48,7 +53,9 @@ public class CronController {
         }
     }
 
-    @PostMapping("/execute/{groupName}/{jobName}")
+
+    @PostMapping(value = "/execute/{groupName}/{jobName}",
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public String executeJob(@PathVariable String groupName, @PathVariable String jobName) {
         try {
             return cron.executeJob(groupName, jobName);
@@ -57,7 +64,8 @@ public class CronController {
         }
     }
 
-    @PostMapping("/stop/{groupName}/{jobName}")
+    @PostMapping(value = "/stop/{groupName}/{jobName}",
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public String stopJob(@PathVariable String groupName, @PathVariable String jobName) {
         try {
             return cron.stopJob(groupName, jobName);
@@ -67,7 +75,8 @@ public class CronController {
     }
 
 
-    @PostMapping("/reload/{groupName}")
+    @PostMapping(value = "/reload/{groupName}",
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public String reloadJobs(@RequestParam(required = false) String groupName){
         jobReader.readServices();
         try {
