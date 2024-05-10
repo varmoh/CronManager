@@ -45,7 +45,7 @@ public class ShellExecuteJob extends YamlJob {
     }
 
     private List<String> execProcess(String command) throws IOException {
-        File dir = new File("/home/ubuntu/cronman/CronManager/");
+        File dir = new File("/app/");
         Process process = Runtime.getRuntime().exec(command, null, dir);
         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
         return reader.lines().collect(Collectors.toList());
