@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17-jdk as build
+FROM eclipse-temurin:17-jdk AS build
 WORKDIR /workspace/app
 
 COPY gradlew .
@@ -23,6 +23,7 @@ COPY --from=build ${DEPENDENCY}/META-INF /app/META-INF
 COPY --from=build ${DEPENDENCY}/BOOT-INF/classes /app
 COPY DSL /DSL
 COPY scripts /app/scripts/
+COPY constants.ini /app/constants.ini
 RUN chmod a+x /app/scripts/*
 
 ENV application.config-path=/DSL
