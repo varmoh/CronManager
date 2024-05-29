@@ -2,10 +2,17 @@ package ee.buerokratt.cronmanager.controllers;
 
 import ee.buerokratt.cronmanager.services.CronService;
 import ee.buerokratt.cronmanager.services.JobReaderService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpRequest;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 public class CronController {
@@ -56,9 +63,11 @@ public class CronController {
 
     @PostMapping(value = "/execute/{groupName}/{jobName}",
         produces = MediaType.APPLICATION_JSON_VALUE)
-    public String executeJob(@PathVariable String groupName, @PathVariable String jobName) {
+    public String executeJob(@PathVariable String groupName,
+                             @PathVariable String jobName,
+                             HttpServletRequest request) {
         try {
-            return cron.executeJob(groupName, jobName);
+            return cron.executeJob(groupName, jobName, request.getParameterMap());
         } catch (SchedulerException e) {
             throw new RuntimeException(e);
         }

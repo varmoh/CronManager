@@ -1,6 +1,7 @@
 exec_command:
   trigger: "0 50 13 * * ?"
   type: exec
+  allowedEnvs: ["PORT", "TEMP"]
   command: "./scripts/test_ls.sh"
 #  startDate: 1709104119000 # 2024-02-28
 #  endDate: 1740726519000   # 2025-02-28
