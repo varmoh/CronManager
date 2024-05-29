@@ -9,13 +9,8 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static ee.buerokratt.cronmanager.utils.LoggingUtils.mapDeepToString;
-import static org.apache.logging.log4j.message.ParameterizedMessage.deepToString;
 
 @Slf4j
 @Getter
@@ -24,8 +19,6 @@ import static org.apache.logging.log4j.message.ParameterizedMessage.deepToString
 public class ShellExecuteJob extends YamlJob {
 
     private String command;
-
-    private List<String> allowedEnvs;
 
     @Override
     public String getType() {
@@ -41,22 +34,19 @@ public class ShellExecuteJob extends YamlJob {
             throw new JobExecutionException("Stopped execution: current time outside defined limits: %d [ %d -> %d ]".formatted(System.currentTimeMillis(), getStartDate(),  getEndDate()));
         }
 
-        JobDataMap jdm = context.getJobDetail().getJobDataMap();
-        command = jdm.getString("command");
+        command = context.getJobDetail().getJobDataMap().getString("command");
 
         try {
-            String params = jdm.containsKey("params") ? (String) jdm.get("params") : "empty";
-            List<String> result = execProcess(command, params);
+            List<String> result = execProcess(command);
             log.info(result.stream().collect(Collectors.joining("\n")));
         } catch (IOException e) {
             throw new JobExecutionException("Problem running command: ", e);
         }
     }
 
-    private List<String> execProcess(String command, String params) throws IOException {
-        log.debug("Running "+command + "("+params+")");
+    private List<String> execProcess(String command) throws IOException {
         File dir = new File("/app/");
-        Process process = Runtime.getRuntime().exec(command, params.split(","), dir);
+        Process process = Runtime.getRuntime().exec(command, null, dir);
         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
         return reader.lines().collect(Collectors.toList());
     }
@@ -65,8 +55,6 @@ public class ShellExecuteJob extends YamlJob {
     public JobDataMap getJobData() {
         JobDataMap map = super.getJobData();
         map.put("command", command);
-        if (allowedEnvs != null)
-            map.put("allowedEnvs", String.join(",", allowedEnvs));
         return map;
     }
 
