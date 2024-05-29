@@ -1,6 +1,7 @@
 package ee.buerokratt.cronmanager.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import ee.buerokratt.cronmanager.model.ShellExecuteJob;
 import ee.buerokratt.cronmanager.model.YamlJob;
 import ee.buerokratt.cronmanager.utils.LoggingUtils;
 import lombok.AllArgsConstructor;
@@ -13,6 +14,8 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static org.apache.logging.log4j.message.ParameterizedMessage.deepToString;
 
 @Slf4j
 @Service
@@ -114,11 +117,29 @@ public class CronService {
         return jobsToJson(jobs.collect(Collectors.toList()));
     }
 
-    public String executeJob(String groupName, String jobName) throws SchedulerException {
+    public String executeJob(String groupName, String jobName,
+                             Map<String, String[]> params) throws SchedulerException {
         GroupMatcher<JobKey> matcher = groupName == null || groupName.isEmpty() ? GroupMatcher.anyGroup() : GroupMatcher.groupEquals(groupName);
+        log.debug("Params: "+deepToString(params));
         JobKey job = scheduler.getJobKeys(matcher).stream()
                 .filter(key -> key.getName().equals(jobName)).findFirst().orElseGet(null);
+        JobDetail jobDetail = scheduler.getJobDetail(job);
+        JobDataMap jdm = jobDetail.getJobDataMap();
+
+        if (jobDetail.getJobClass() == ShellExecuteJob.class && jdm.containsKey("allowedEnvs")) {
+            List<String> allowedParams = Arrays.asList(((String)jobDetail.getJobDataMap().get("allowedEnvs")).split(","));
+            String env = params.entrySet().stream()
+                    .filter(entry -> allowedParams.contains(entry.getKey()))
+                    .map(entry-> entry.getKey() + "=" + entry.getValue()[0])
+                    .collect(Collectors.joining(","));
+            jobDetail.getJobDataMap().put("params", env);
+            log.debug("Env: "+deepToString(env) + " stored: "+ jobDetail.getJobDataMap().get("params"));
+            scheduler.addJob(jobDetail, true);
+        }
+
+
         scheduler.triggerJob(job);
+
         return getRunningJobs(groupName);
     }
 
