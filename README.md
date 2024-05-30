@@ -43,6 +43,7 @@ is not executed if current time is before `startDate` or after `endDate`.
   trigger: <trigger_expression>
   type: http
   command: <path_to_executable_script>
+  allowedEnvs: [<array_of_allowed_environment_variables>]
 ```
 
 - `path_to_executable_script` is resolved from application root 
@@ -51,6 +52,8 @@ folder (defined in `application.appRootFolder`)
 or inside a Docker container, the scripts in `scripts` folder under 
 application root are automatically change to executable, in other cases
 this has to be done manually.
+- `allowedEnvs` is (comma separated) array of strings that specify, which
+query parameters are passed to script as shell environment variables.
 
 
 An example of a configuration is included in DSL/example.yml
@@ -107,8 +110,11 @@ Example:
 ]
 ```
 
-#### POST /execute/<group_name>/<job_name> 
+#### POST /execute/<group_name>/<job_name>
 Executes specified job from specifed group out of sch edule.
+
+It is possible to add query parameters that will be filtered through `allowedEnvs` 
+and passed as environment variables to shell execution jobs. 
 
 Returns list of currently running jobs in that group at the moment of execution in same format as `GET /running``
 
