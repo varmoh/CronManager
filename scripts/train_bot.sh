@@ -73,7 +73,7 @@ fi
 cross_validate_body="${cross_validate_response:: -3}"
 
 copy_file_body_dto='{"destinationFilePath":"'$trained_model_filename'","destinationStorageType":"S3","sourceFilePath":"'$trained_model_filename'","sourceStorageType":"FS"}'
-copy_file_response=$(curl -s -w "%{http_code}" -X POST -H "Content-Type: application/json" -d "$copy_file_body_dto" "$S3_FERRY/v1/files/copy")
+copy_file_response=$(curl -s -w "%{http_code}" -X POST -H "Content-Type: application/json" -d "$copy_file_body_dto" "$S3_FERRY_TRAIN/v1/files/copy")
 copy_file_status="${copy_file_response: -3}"
 if [ "$copy_file_status" != "201" ]; then
     echo "Copying file from local to remote storage failed with status code $copy_file_status"
