@@ -4,10 +4,23 @@ echo 'Start script...'
 pwd
 . constants.ini
 
-curl -H "x-ruuter-skip-authentication: true" "$TRAINING_PUBLIC_RUUTER/rasa/model/add-new-model-processing"
-
 # POST request to merge training yaml files
 train_yaml=$(curl -X POST -H "Content-Type: application/json" -d '{"file_path":"'$TRAINING_FILES_PATH'"}' "$TRAINING_DMAPPER/mergeYaml")
+
+checksum=$(curl -X POST -H "Content-Type: text/plain" -d "$train_yaml" "$TRAINING_DMAPPER/utils/calculate-sha256-checksum")
+
+resql_response=$(curl -X POST -H "Content-Type: application/json" "$TRAINING_RESQL/get-latest-ready-model")
+if [ "$resql_response" != [] ]; then
+    training_data_checksum=$(echo "$resql_response" | grep -o '"trainingDataChecksum":"[^"]*' | grep -o '[^"]*$')
+fi
+
+if [ "$training_data_checksum" == "$checksum" ]; then
+    echo "Model already trained with the same data"
+    curl -H "x-ruuter-skip-authentication: true" "$TRAINING_PUBLIC_RUUTER/rasa/model/add-new-model-already-trained"
+    exit 1
+fi
+
+curl -H "x-ruuter-skip-authentication: true" "$TRAINING_PUBLIC_RUUTER/rasa/model/add-new-model-processing"
 
 # POST request to train model in RASA
 train_response=$(curl -s -X POST -D - -d "$train_yaml" "$TRAINING_RASA/model/train?force_training=true")
@@ -68,7 +81,7 @@ if [ "$copy_file_status" != "201" ]; then
     exit 1
 fi
 
-add_new_model_body_dto='{"fileName":"'$trained_model_filename'","testReport":'$test_body',"crossValidationReport":'$cross_validate_body'}'
+add_new_model_body_dto='{"fileName":"'$trained_model_filename'","testReport":'$test_body',"crossValidationReport":'$cross_validate_body',"trainingDataChecksum":"'$checksum'"}'
 curl -X POST -H "x-ruuter-skip-authentication: true" -H "Content-Type: application/json" -d "$add_new_model_body_dto" "$TRAINING_PUBLIC_RUUTER/rasa/model/add-new-model-ready"
 
 rm /data/$trained_model_filename
