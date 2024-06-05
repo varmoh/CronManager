@@ -16,9 +16,6 @@ if [ "$resql_response" == [] ]; then
 fi
 
 filename=$(echo "$resql_response" | grep -o '"fileName":"[^"]*' | grep -o '[^"]*$')
-model_type=$(echo "$resql_response" | grep -o '"modelType":"[^"]*' | grep -o '[^"]*$')
-version_number=$(echo "$resql_response" | grep -o '"versionNumber":"[^"]*' | grep -o '[^"]*$')
-model_version=$(echo "$resql_response" | grep -o '"modelVersion":"[^"]*' | grep -o '[^"]*$')
 
 copy_file_body_dto='{"destinationFilePath":"'$filename'","destinationStorageType":"FS","sourceFilePath":"'$filename'","sourceStorageType":"S3"}'
 copy_file_response=$(curl -s -w "%{http_code}" -X POST -H "Content-Type: application/json" -d "$copy_file_body_dto" "$S3_FERRY_LOAD/v1/files/copy")
@@ -34,7 +31,7 @@ if [ "$load_status" != "204" ]; then
     exit 1
 fi
 
-add_deployed_model_body_dto='{"fileName":"'$filename'","modelType":"'$model_type'","versionNumber":"'$version_number'","modelVersion":"'$model_version'"}'
+add_deployed_model_body_dto='{"fileName":"'$filename'"}'
 curl -X POST -H "x-ruuter-skip-authentication: true" -H "Content-Type: application/json" -d "$add_deployed_model_body_dto" "$TRAINING_PUBLIC_RUUTER/rasa/model/add-new-model-deployed"
 
 shopt -s extglob 
