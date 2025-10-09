@@ -43,17 +43,29 @@ echo "$(currentTimestamp) - $script_name started"
 
 echo "$(currentTimestamp) - Creating new chat"
 
-response=$(curl -s -X POST "http://localhost:8086/backoffice/chats/init" \
+response_headers=$(mktemp)
+response_body=$(mktemp)
+
+curl -s -D "$response_headers" -o "$response_body" -X POST "http://localhost:8086/backoffice/chats/init" \
   -H "Content-Type: application/json" \
-  -d "$est_message")
+  -d "$est_message"
 
-chat_id=$(echo "$response" | jq -r '.response.id')
-
+chat_id=$(jq -r '.response.id' < "$response_body")
 
 if [[ -z "$chat_id" ]]; then
   echo "Failed to get chat_id from response"
   exit 1
 fi
+
+chat_jwt=$(grep -i "^Set-Cookie: chatJwt=" "$response_headers" | sed 's/^Set-Cookie: chatJwt=\([^;]*\).*/\1/')
+
+if [[ -z "$chat_jwt" ]]; then
+  echo "Failed to get chatJwt from response headers"
+  exit 1
+fi
+
+echo "chat_id: $chat_id"
+echo "chat_jwt: $chat_jwt"
 
 eng_message=$(cat <<EOF
 {
@@ -87,9 +99,16 @@ sleep 1.5
 
 response=$(curl -s -X POST "http://localhost:8086/backoffice/chats/messages/add" \
   -H "Content-Type: application/json" \
+  -H "Cookie: chatJwt=$chat_jwt" \
   -d "$eng_message")
 
 sleep 1.5
+
+newMessage=$(curl -s -X GET "http://localhost:8086/backoffice/chats/get" \
+  -H "Cookie: chatJwt=$chat_jwt")
+
+sleep 1.5
+echo "get message $newMessage"
 
 terminate_message=$(cat <<EOF
 {
