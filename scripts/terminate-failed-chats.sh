@@ -12,9 +12,8 @@ get_new_nonce() {
 }
 
 dead_chat_ids=$(curl -s \
-  -H "x-ruuter-nonce: $(get_new_nonce)" \
   -H "Content-Type: application/json" \
-  "$CHATBOT_RUUTER_PRIVATE/backoffice/cron-tasks/end-dead-chats")
+  "http://component-byk-ruuter-private:8080/backoffice/cron-tasks/end-dead-chats")
 
 echo "$(date -u +"%Y-%m-%d %H:%M:%S.%3NZ") - Raw Response: $dead_chat_ids"
 
