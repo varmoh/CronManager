@@ -5,10 +5,10 @@ currentTimestamp() {
   date -u +"%Y-%m-%dT%H:%M:%S.%3NZ"
 }
 
-est_message=$(cat <<EOF
+initial_message=$(cat <<EOF
 {
   "message": {
-    "content":"Virtuaalne vestlusrobot ärkab sõnade kaudu ellu, jäljendades inimlikku rütmi ja tooni. Tehisintellekti loodud vastused voolavad katkestusteta, justkui sulanduksid need päris vestluse öö voogu.",
+    "content":"Tere",
     "authorTimestamp":"$(currentTimestamp)",
     "authorRole":"end-user"
     },
@@ -48,7 +48,7 @@ response_body=$(mktemp)
 
 curl -s -D "$response_headers" -o "$response_body" -X POST "http://localhost:8086/backoffice/chats/init" \
   -H "Content-Type: application/json" \
-  -d "$est_message"
+  -d "$initial_message"
 
 chat_id=$(jq -r '.response.id' < "$response_body")
 
@@ -67,11 +67,19 @@ fi
 echo "chat_id: $chat_id"
 echo "chat_jwt: $chat_jwt"
 
-eng_message=$(cat <<EOF
+initialResponse=$(curl -s -X GET "http://localhost:8086/backoffice/chats/get" \
+  -H "Cookie: chatJwt=$chat_jwt")
+
+sleep 1.5
+
+lastMessage=$(echo "$initialResponse" | jq -r '.response.lastMessage')
+echo "$lastMessage"
+
+second_message=$(cat <<EOF
 {
   "message": {
     "chatId":"$chat_id",
-    "content":"Farewell echoes drift like soft whispers across a fading horizon, where moments dissolve into gentle silence. In the pause between parting and memory, the words linger, shaping the quiet of what comes next.",
+    "content":"Virtuaalne vestlusrobot ärkab sõnade kaudu ellu, jäljendades inimlikku rütmi ja tooni. Tehisintellekti loodud vastused voolavad katkestusteta, justkui sulanduksid need päris vestluse öö voogu.",
     "authorTimestamp":"$(currentTimestamp)",
     "authorRole":"end-user"
     },
@@ -100,15 +108,34 @@ sleep 1.5
 response=$(curl -s -X POST "http://localhost:8086/backoffice/chats/messages/add" \
   -H "Content-Type: application/json" \
   -H "Cookie: chatJwt=$chat_jwt" \
-  -d "$eng_message")
+  -d "$second_message")
 
 sleep 1.5
 
-newMessage=$(curl -s -X GET "http://localhost:8086/backoffice/chats/get" \
+bot_response=$(curl -s -X GET "http://localhost:8086/backoffice/chats/get" \
   -H "Cookie: chatJwt=$chat_jwt")
 
+last_response=$(echo "$bot_response" | jq -r '.response.lastMessage')
+echo "$last_response"
+
 sleep 1.5
-echo "get message $newMessage"
+
+events=(
+  "client_left_for_unknown_reasons"
+  "client_left_with_no_resolution"
+  "client_left_with_accepted"
+)
+
+index_file="/tmp/event_index"
+
+if [ ! -f "$index_file" ]; then
+  echo 0 > "$index_file"
+fi
+
+index=$(cat "$index_file")
+event=${events[$index]}
+next_index=$(( (index + 1) % ${#events[@]} ))
+echo "$next_index" > "$index_file"
 
 terminate_message=$(cat <<EOF
 {
@@ -116,9 +143,9 @@ terminate_message=$(cat <<EOF
     "chatId":"$chat_id",
     "authorTimestamp":"$(currentTimestamp)",
     "authorRole":"end-user",
-    "event": "client_left_for_unknown_reasons"
+    "event": "$event"
     },
-  "status": "ENDED"
+  "status": "ENDED",
   "domain":"none"
 }
 EOF
@@ -126,6 +153,9 @@ EOF
 
 terminateChat=$(curl -s -X POST "http://localhost:8086/backoffice/chats/end" \
       -H "Content-Type: application/json" \
+      -H "Cookie: chatJwt=$chat_jwt" \
       -d "$terminate_message")
+
+echo "termination response: $terminateChat"
 
 echo "$(currentTimestamp) - $script_name finished, chat with id $chat_id was created and terminated"
