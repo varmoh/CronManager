@@ -5,6 +5,8 @@ currentTimestamp() {
   date -u +"%Y-%m-%dT%H:%M:%S.%3NZ"
 }
 
+. constants.ini
+
 initial_message=$(cat <<EOF
 {
   "message": {
@@ -46,7 +48,7 @@ echo "$(currentTimestamp) - Creating new chat"
 response_headers=$(mktemp)
 response_body=$(mktemp)
 
-curl -s -D "$response_headers" -o "$response_body" -X POST "http://localhost:8086/backoffice/chats/init" \
+curl -s -D "$response_headers" -o "$response_body" -X POST "$CHATBOT_RUUTER_PUBLIC/backoffice/chats/init" \
   -H "Content-Type: application/json" \
   -d "$initial_message"
 
@@ -67,7 +69,7 @@ fi
 echo "chat_id: $chat_id"
 echo "chat_jwt: $chat_jwt"
 
-initialResponse=$(curl -s -X GET "http://localhost:8086/backoffice/chats/get" \
+initialResponse=$(curl -s -X GET "$CHATBOT_RUUTER_PUBLIC/backoffice/chats/get" \
   -H "Cookie: chatJwt=$chat_jwt")
 
 sleep 1.5
@@ -105,14 +107,14 @@ EOF
 
 sleep 1.5
 
-response=$(curl -s -X POST "http://localhost:8086/backoffice/chats/messages/add" \
+response=$(curl -s -X POST "$CHATBOT_RUUTER_PUBLIC/backoffice/chats/messages/add" \
   -H "Content-Type: application/json" \
   -H "Cookie: chatJwt=$chat_jwt" \
   -d "$second_message")
 
 sleep 1.5
 
-bot_response=$(curl -s -X GET "http://localhost:8086/backoffice/chats/get" \
+bot_response=$(curl -s -X GET "$CHATBOT_RUUTER_PUBLIC/backoffice/chats/get" \
   -H "Cookie: chatJwt=$chat_jwt")
 
 last_response=$(echo "$bot_response" | jq -r '.response.lastMessage')
@@ -121,9 +123,13 @@ echo "$last_response"
 sleep 1.5
 
 events=(
-  "client_left_for_unknown_reasons"
-  "client_left_with_no_resolution"
-  "client_left_with_accepted"
+  "CLIENT_LEFT_FOR_UNKNOWN_REASONS"
+  "CLIENT_LEFT_WITH_NO_RESOLUTION"
+  "CLIENT_LEFT_WITH_ACCEPTED"
+  "RESPONSE_SENT_TO_CLIENT_EMAIL"
+  "OTHER"
+  "HATE_SPEECH"
+  "ACCEPTED"
 )
 
 index_file="/tmp/event_index"
@@ -151,7 +157,7 @@ terminate_message=$(cat <<EOF
 EOF
 )
 
-terminateChat=$(curl -s -X POST "http://localhost:8086/backoffice/chats/end" \
+terminateChat=$(curl -s -X POST "$CHATBOT_RUUTER_PUBLIC/backoffice/chats/end" \
       -H "Content-Type: application/json" \
       -H "Cookie: chatJwt=$chat_jwt" \
       -d "$terminate_message")
